@@ -17,19 +17,22 @@ fn main() {
 
     let strategy_guide = parse_strategy_guide_from_text(raw_strategy_guide);
 
-    println!("Strategy guide: {:?}", strategy_guide);
+    if cfg!(debug_assertions) {
+        println!("Strategy guide: {:?}", strategy_guide);
+    }
 
     let mut acc: i32 = 0;
 
     for (a, b) in strategy_guide.iter() {
         let result = shapes_to_points(*a, *b);
-        println!("Result: {}", result);
+        if cfg!(debug_assertions) {
+            println!("Result: {}", result);
+        }
         acc += result
 
     }
 
     println!("Final score: {}", acc)
-
 }
 
 fn parse_strategy_guide_from_text(lines: Vec<String>) -> Vec<(i32, i32)> {
