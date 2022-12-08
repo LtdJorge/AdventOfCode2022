@@ -9,19 +9,27 @@ const SCISSORS: i32 = 3;
 const WIN_VALUE: i32 = 6;
 const DRAW_VALUE: i32 = 3;
 
+#[derive(PartialEq)]
+enum Exercise {
+    A,
+    B
+}
+
 fn main() {
     let raw_strategy_guide = match fill_vec_from_file("input.txt") {
         Ok(content) => content,
         Err(e) => panic!("Panic: {}", e),
     };
 
-    let strategy_guide = parse_strategy_guide_from_text(raw_strategy_guide);
+    let strategy_guide = parse_strategy_guide_from_text(&raw_strategy_guide, Exercise::A);
+    let strategy_guide_b = parse_strategy_guide_from_text(&raw_strategy_guide, Exercise::B);
 
     if cfg!(debug_assertions) {
         println!("Strategy guide: {:?}", strategy_guide);
     }
 
     let mut acc: i32 = 0;
+    let mut acc_b: i32 = 0;
 
     for (a, b) in strategy_guide.iter() {
         let result = shapes_to_points(*a, *b);
@@ -31,26 +39,54 @@ fn main() {
         acc += result
 
     }
+    for (a, b) in strategy_guide_b.iter() {
+        let result = shapes_to_points(*a, *b);
+        if cfg!(debug_assertions) {
+            println!("Result: {}", result);
+        }
+        acc_b += result
 
-    println!("Final score: {}", acc)
+    }
+
+    println!("Final score A: {}", acc);
+    println!("Final score B: {}", acc_b);
 }
 
-fn parse_strategy_guide_from_text(lines: Vec<String>) -> Vec<(i32, i32)> {
+fn parse_strategy_guide_from_text(lines: &Vec<String>, exercise_to_run: Exercise) -> Vec<(i32, i32)> {
     let strategy_vector = lines.iter().map(|line|
         line.split_whitespace().collect::<Vec<&str>>()).collect::<Vec<_>>();
     let characters_strategy_guide: Vec<(&str, &str)> = strategy_vector.iter().map(|pair| (*pair.index(0), *pair.index(1))).collect();
-    let strategy_guide = characters_strategy_guide.iter().map(|tuple| match tuple {
-        ("A", "X") => (ROCK, ROCK),
-        ("A", "Y") => (ROCK, PAPER),
-        ("A", "Z") => (ROCK, SCISSORS),
-        ("B", "X") => (PAPER, ROCK),
-        ("B", "Y") => (PAPER, PAPER),
-        ("B", "Z") => (PAPER, SCISSORS),
-        ("C", "X") => (SCISSORS, ROCK),
-        ("C", "Y") => (SCISSORS, PAPER),
-        ("C", "Z") => (SCISSORS, SCISSORS),
-        _ => (0, 0)
-    }).collect::<Vec<_>>();
+
+    let strategy_guide: Vec<(i32, i32)>;
+
+    if exercise_to_run == Exercise::A {
+        strategy_guide = characters_strategy_guide.iter().map(|tuple| match tuple {
+            ("A", "X") => (ROCK, ROCK),
+            ("A", "Y") => (ROCK, PAPER),
+            ("A", "Z") => (ROCK, SCISSORS),
+            ("B", "X") => (PAPER, ROCK),
+            ("B", "Y") => (PAPER, PAPER),
+            ("B", "Z") => (PAPER, SCISSORS),
+            ("C", "X") => (SCISSORS, ROCK),
+            ("C", "Y") => (SCISSORS, PAPER),
+            ("C", "Z") => (SCISSORS, SCISSORS),
+            _ => (0, 0)
+        }).collect::<Vec<_>>();
+    } else {
+        strategy_guide = characters_strategy_guide.iter().map(|tuple| match tuple {
+            ("A", "X") => (ROCK, SCISSORS),
+            ("A", "Y") => (ROCK, ROCK),
+            ("A", "Z") => (ROCK, PAPER),
+            ("B", "X") => (PAPER, ROCK),
+            ("B", "Y") => (PAPER, PAPER),
+            ("B", "Z") => (PAPER, SCISSORS),
+            ("C", "X") => (SCISSORS, PAPER),
+            ("C", "Y") => (SCISSORS, SCISSORS),
+            ("C", "Z") => (SCISSORS, ROCK),
+            _ => (0, 0)
+        }).collect::<Vec<_>>();
+    }
+
     strategy_guide
 }
 
@@ -109,5 +145,5 @@ fn find_total_score(){
 
     }
 
-    println!("Final score: {}", acc)
+    println!("Final score A: {}", acc)
 }
